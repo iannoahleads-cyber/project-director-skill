@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Director"
+  short_description: "Coordinate project work with subagent groups"
+  default_prompt: "Use $project-director to coordinate this project with a director window, subagent groups, and a persistent requirement record when needed."
