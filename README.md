@@ -4,100 +4,114 @@
 ![Codex Skill](https://img.shields.io/badge/Codex-skill-111827.svg)
 ![Workflow](https://img.shields.io/badge/workflow-director--led-2563eb.svg)
 
-**Turn long Codex project chats into director-led execution with focused subagent teams, persistent requirements, and final integration control.**
+**A coordination skill for Codex projects that are too large, too long, or too parallel for one fragile chat context.**
 
-When a project gets large, the main conversation can become the weakest link: requirements get buried, context gets compressed, subagents drift, and the final answer becomes a pile of partial summaries. Project Director gives Codex a stricter operating model: the main window acts as the project director, subagents become bounded work groups, and the project state is preserved in a lightweight control log when the work is long or risky.
+Project Director turns Codex into a project control plane. The main window keeps ownership of requirements, decisions, integration, and verification, while subagents become bounded explorer, worker, and reviewer groups. For long-running work, the skill creates a durable project memory with `docs/codex-director-log.md` so context compaction does not erase the mission.
 
-Use it when you want Codex to coordinate real project work instead of just "trying harder" inside one overloaded context window.
+Use it when the hard part is not just writing code, but keeping a multi-step AI-assisted project coherent.
 
 ```text
 Use $project-director to coordinate this project.
 You are the director. Split work into subagent groups when useful,
-preserve requirements, and verify the final result.
+preserve requirements, prevent scope drift, and verify the final result.
 ```
 
-## Why This Exists
+## The Problem
 
-Large Codex tasks often fail for coordination reasons, not intelligence reasons.
+Large Codex tasks usually fail at the coordination layer.
 
-- A long conversation gets compressed and earlier constraints fade.
-- Multiple files or modules need parallel investigation.
-- Subagents are useful, but only if they have clear ownership.
-- Worker agents can accidentally overlap, over-edit, or return disconnected results.
-- The main window needs to synthesize and verify, not just paste summaries.
-
-Project Director makes those responsibilities explicit.
-
-## Before And After
-
-| Without Project Director | With Project Director |
+| Failure mode | What it looks like |
 | --- | --- |
-| One overloaded chat tries to remember everything. | The main window owns a compact mission, constraints, and decisions. |
-| Subagents may receive vague tasks. | Each group gets a role, scope, forbidden areas, and expected output. |
-| Workers can overlap or edit too broadly. | Workers operate inside assigned ownership boundaries. |
-| Context compaction can erase earlier requirements. | Long tasks get `docs/codex-director-log.md` as durable project memory. |
-| Final answers become stitched-together summaries. | The director integrates, verifies, and reports one coherent result. |
+| Context decay | Earlier constraints disappear after a long conversation or context compaction. |
+| Vague delegation | Subagents receive broad prompts and return partial, disconnected summaries. |
+| Write-scope overlap | Multiple workers touch the same files or undo each other's assumptions. |
+| Lost integration | Each piece looks fine alone, but the combined project does not hold together. |
+| Weak verification | The final answer describes effort instead of proving the result. |
 
-## What It Does
+Project Director makes those failure modes explicit and gives Codex a workflow to avoid them.
 
-Project Director gives Codex a repeatable operating system for complex work:
-
-| Capability | What changes in practice |
-| --- | --- |
-| Director window | The main chat owns the mission, constraints, decisions, integration, and final delivery. |
-| Work lanes | The task is split by module, file set, risk area, research question, or verification lane. |
-| Agent roles | Explorers investigate, workers implement inside assigned scope, reviewers inspect risk and quality. |
-| Persistent memory | Long-running tasks use `docs/codex-director-log.md` to survive context compaction. |
-| Integration gate | The director reviews subagent output, checks scope, runs verification, and reports one coherent result. |
-
-## Workflow
+## Core Model
 
 ```mermaid
 flowchart TD
-    A["User gives project task"] --> B["Director captures mission, constraints, success criteria"]
-    B --> C{"Task size?"}
-    C -->|Small or tightly coupled| D["Main window handles locally"]
-    C -->|Ordinary project| E["Create focused work lanes"]
-    C -->|Heavy or long-running| F["Create or update docs/codex-director-log.md"]
-    E --> G["Dispatch explorer / worker / reviewer groups when useful"]
+    A["Project request"] --> B["Director captures mission, constraints, success criteria"]
+    B --> C{"Task shape"}
+    C -->|Small or tightly coupled| D["Main window executes locally"]
+    C -->|Independent lanes| E["Split into scoped work lanes"]
+    C -->|Long or high-risk| F["Create docs/codex-director-log.md"]
+    E --> G["Explorer / Worker / Reviewer groups"]
     F --> G
-    G --> H["Main window continues non-overlapping local work"]
-    H --> I["Integrate subagent outputs and inspect changes"]
+    G --> H["Director continues non-overlapping local work"]
+    H --> I["Inspect outputs and changed files"]
     I --> J["Run verification"]
-    J --> K["Director summary: changes, evidence, risks"]
+    J --> K["One final director summary"]
     D --> J
 ```
+
+The main window is never just a dispatcher. It is responsible for the project state.
+
+## Operational Contract
+
+| Role | Contract |
+| --- | --- |
+| Director | Own the mission, constraints, decisions, work lanes, integration, and final delivery. |
+| Explorer | Read-only investigation: architecture, risks, file paths, options, root causes. |
+| Worker | Bounded implementation inside assigned files, modules, or responsibility. |
+| Reviewer | Independent pass for spec compliance, code quality, verification gaps, and scope drift. |
+| Control log | Persistent state for long tasks: mission, constraints, lanes, decisions, status, verification. |
+| Verification gate | Completion requires evidence: tests, builds, render checks, manual inspection, or equivalent proof. |
+
+## What Makes It Different
+
+This is not a prompt that says "use more subagents."
+
+It defines a delivery model:
+
+- classify the task before spawning agents
+- keep small or tightly coupled work local
+- delegate only independent lanes
+- give every worker ownership and forbidden areas
+- keep explorers read-only
+- use reviewers for risk, not decoration
+- preserve long-running state in a control log
+- synthesize results in the main window
+- verify before reporting completion
+
+The result is faster parallel work without losing the thread.
 
 ## When To Use It
 
 Use `$project-director` for:
 
-- multi-file coding tasks
-- frontend/backend/test work that can run in parallel
-- debugging with several possible root causes
+- multi-file feature work
+- frontend/backend/test changes that can run in parallel
+- debugging with several plausible root causes
 - refactors that need ownership boundaries
 - research plus implementation tasks
-- long-running tasks likely to hit context compaction
-- document, spreadsheet, or presentation projects with separate content and QA lanes
-- any task where you want Codex to act like a technical lead instead of a single-threaded assistant
+- long-running projects likely to hit context compaction
+- document, spreadsheet, or presentation work with separate content and QA lanes
+- any task where you want Codex to behave like a technical lead, not a single-threaded assistant
 
 Do not use it for tiny, single-answer tasks. The skill deliberately keeps small or tightly coupled work local.
 
-## Quick Start
+## Install
 
-Install from GitHub:
+Install into your Codex skills directory:
 
 ```powershell
 git clone https://github.com/iannoahleads-cyber/project-director-skill.git "$env:USERPROFILE\.codex\skills\project-director"
 ```
 
-Restart Codex, then invoke:
+Restart Codex after installation.
+
+## Prompt Examples
 
 ```text
-Use $project-director to coordinate this project. Act as the director and open subagent groups when useful.
+Use $project-director for this repository.
+We need to change the dashboard, update the API contract, add tests,
+and avoid losing constraints if the conversation gets compressed.
+Split the work into groups, keep a director log if needed, and verify before final delivery.
 ```
-
-Chinese examples:
 
 ```text
 用 $project-director 做这个项目，你当总监开几组 subagent 分工推进。
@@ -105,94 +119,82 @@ Chinese examples:
 前端、后端、测试都要动，你来拆组推进，别让上下文压缩后忘记要求。
 ```
 
-## Example Scenario
+## Director Log Schema
 
-Ask Codex:
-
-```text
-Use $project-director for this repository.
-We need to change the dashboard, update the API contract, add tests,
-and avoid losing the constraints if the conversation gets compressed.
-Split the work into groups, keep a director log if needed, and verify before final delivery.
-```
-
-Project Director pushes Codex toward this shape:
-
-```text
-Director:
-- Mission and constraints captured.
-- This is a heavy project because frontend, backend, and tests are involved.
-- Creating docs/codex-director-log.md.
-
-Explorer group:
-- Map current architecture and test commands.
-
-Frontend worker:
-- Own dashboard UI files only.
-
-Backend worker:
-- Own API contract and server logic only.
-
-Reviewer:
-- Check integration, tests, and scope drift.
-```
-
-## How The Workflow Feels
-
-Instead of immediately editing files, Codex first establishes a control surface:
-
-```text
-Mission:
-Build X without breaking Y.
-
-Constraints:
-- Keep existing design patterns.
-- Do not touch unrelated files.
-- Verify with build and tests.
-
-Work lanes:
-- Explorer: map current architecture and risk.
-- Worker A: frontend scope only.
-- Worker B: backend scope only.
-- Reviewer: integration and verification.
-```
-
-For heavier work, the director creates or updates:
+For long or risky work, Project Director tells Codex to create or update:
 
 ```text
 docs/codex-director-log.md
 ```
 
-That file records the mission, constraints, work lanes, decisions, current state, blockers, and verification results. If context is compressed later, Codex has a durable project memory to reload before continuing.
+Suggested structure:
 
-## Agent Roles
+```markdown
+# Codex Director Log
 
-### Explorer
+## Mission
+- Goal:
+- User constraints:
+- Success criteria:
 
-Explorers are read-only. They map the codebase, compare approaches, identify risks, and return evidence with file paths. They do not edit files.
+## Work Lanes
+- Lane:
+  - Owner:
+  - Scope:
+  - Forbidden:
+  - Expected output:
 
-### Worker
+## Decisions
+- YYYY-MM-DD:
 
-Workers can edit, but only inside explicit ownership boundaries. A worker prompt includes scope, forbidden areas, acceptance criteria, and expected verification.
+## Current State
+- Done:
+- In progress:
+- Blocked:
+- Verification:
+```
 
-### Reviewer
+After context compaction, the director should reload this file, inspect the current git diff, check the latest verification state, and only then continue.
 
-Reviewers check spec compliance, code quality, integration risk, and verification gaps. They report findings first, not compliments.
+## Subagent Prompt Contract
 
-## What Makes It Different
+Every delegated worker should receive:
 
-This is not just "use more subagents."
+- the overall mission
+- exact ownership boundaries
+- files or modules it may edit
+- files, modules, or behaviors it must not touch
+- acceptance criteria
+- verification command or expected proof
+- required return format: changed files, implementation summary, verification result, risks
 
-Project Director treats subagents as teams inside a managed delivery process. The main window remains accountable for:
+Every explorer should receive a read-only scope and return evidence with file paths.
 
-- preserving the user's actual requirements
-- deciding when parallelism is appropriate
-- preventing overlapping edits
-- rejecting out-of-scope work
-- integrating results into one coherent change
-- verifying the final project state
+Every reviewer should report findings first, with concrete risks and fixes.
 
-The goal is faster project work without losing the thread.
+## Example Work Split
+
+```text
+Director:
+- Capture mission and constraints.
+- Classify as heavy project.
+- Create docs/codex-director-log.md.
+
+Explorer:
+- Map architecture, package scripts, test commands, and risky integration points.
+
+Frontend worker:
+- Own dashboard UI and client state only.
+
+Backend worker:
+- Own API contract and server logic only.
+
+Test worker:
+- Own unit/integration/E2E coverage, avoiding implementation-file overlap.
+
+Reviewer:
+- Check spec compliance, integration risk, and verification completeness.
+```
 
 ## Repository Layout
 
@@ -205,16 +207,12 @@ project-director/
     └── openai.yaml
 ```
 
-## Local Development
-
-Validate the skill:
+## Validate Locally
 
 ```powershell
 $env:PYTHONUTF8='1'
 python "$env:USERPROFILE\.codex\skills\.system\skill-creator\scripts\quick_validate.py" .
 ```
-
-Security scan:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\agent-skill-creator\scripts\security_scan.py" .
