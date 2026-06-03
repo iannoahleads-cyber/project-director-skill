@@ -16,6 +16,36 @@ Act as the director: preserve requirements, split independent work,
 use subagent groups only where useful, and verify the final result.
 ```
 
+## New: Expert Fit + Agency Bridge
+
+Project Director now has an **Expert Fit** gate. Before it plans or dispatches work, it asks:
+
+> Which specialist identities would make this result better?
+
+That means the director can choose between three levels of expert help:
+
+| Mode | When it helps | What happens |
+| --- | --- | --- |
+| Expert Lens | Small or tightly coupled tasks | The director thinks through the problem with the right expert perspective. |
+| Specialist Subagent | A bounded lane needs expertise | The director assigns a specific role such as security engineer, code reviewer, product manager, or UX researcher. |
+| Agency Workflow | A broad task needs multiple perspectives | The director can use `agency-orchestrator` and `agency-agents-zh` to run a multi-expert DAG. |
+
+```mermaid
+flowchart TD
+    A["User task"] --> B["Project Director"]
+    B --> C["Expert Fit Gate"]
+    C --> D["Expert Lens"]
+    C --> E["Specialist Subagent"]
+    C --> F["Agency Workflow"]
+    F --> G["agency-orchestrator"]
+    G --> H["agency-agents-zh roles"]
+    D --> I["Director integrates and verifies"]
+    E --> I
+    H --> I
+```
+
+See [Project Director Agency Bridge](docs/project-director-agency-bridge.md) for the full operating model.
+
 ## Why Developers Care
 
 Codex can already inspect, edit, test, and delegate. The hard part is keeping those capabilities coordinated when a task spans many files, many turns, or several agents.
@@ -212,6 +242,15 @@ project-director/
 ├── SKILL.md
 ├── README.md
 ├── LICENSE
+├── docs/
+│   ├── project-director-agency-bridge.md
+│   └── operation-runbook.md
+├── scripts/
+│   ├── setup-agency-stack.ps1
+│   └── security-scan.ps1
+├── workflows/
+│   ├── local-smoke-test.yaml
+│   └── project-expert-review.yaml
 └── agents/
     └── openai.yaml
 ```

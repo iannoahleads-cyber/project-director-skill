@@ -1,0 +1,101 @@
+name: "Project Expert Review"
+description: "Multi-role project review: product, architecture, security, UX, and final director-style synthesis."
+
+agents_dir: "./agency-stack/agency-agents-zh"
+
+llm:
+  provider: "openai"
+  model: "your-model-name"
+  max_tokens: 4096
+  timeout: 300000
+  retry: 1
+
+concurrency: 3
+
+inputs:
+  - name: project_brief
+    description: "Project brief, repo summary, PRD, or user request"
+    required: true
+
+steps:
+  - id: product_review
+    role: "product/product-manager"
+    task: |
+      Review the project brief from a product perspective.
+
+      {{project_brief}}
+
+      Return:
+      - Target users
+      - Core value
+      - Missing requirements
+      - Top risks
+    output: product_report
+
+  - id: architecture_review
+    role: "engineering/engineering-software-architect"
+    task: |
+      Review the project brief from a software architecture perspective.
+
+      {{project_brief}}
+
+      Return:
+      - Architecture assumptions
+      - Technical risks
+      - Recommended structure
+      - Verification needs
+    output: architecture_report
+
+  - id: security_review
+    role: "engineering/engineering-security-engineer"
+    task: |
+      Review the project brief from a security perspective.
+
+      {{project_brief}}
+
+      Return:
+      - Threat model
+      - Sensitive data risks
+      - Authentication/authorization concerns
+      - Concrete mitigations
+    output: security_report
+
+  - id: ux_review
+    role: "design/design-ux-researcher"
+    task: |
+      Review the project brief from a UX and user research perspective.
+
+      {{project_brief}}
+
+      Return:
+      - User journey risks
+      - Usability concerns
+      - Validation questions
+      - Suggested experiments
+    output: ux_report
+
+  - id: synthesis
+    role: "project-management/project-manager"
+    depends_on: [product_review, architecture_review, security_review, ux_review]
+    task: |
+      Synthesize the expert reports into a project-director style action plan.
+
+      ## Product
+      {{product_report}}
+
+      ## Architecture
+      {{architecture_report}}
+
+      ## Security
+      {{security_report}}
+
+      ## UX
+      {{ux_report}}
+
+      Return:
+      - Executive summary
+      - Decisions needed
+      - Prioritized action plan
+      - Verification checklist
+      - Residual risks
+    output: final_report

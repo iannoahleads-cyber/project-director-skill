@@ -1,0 +1,34 @@
+name: "Local Smoke Test"
+description: "Minimal one-step workflow to verify Agency Orchestrator can load roles and call the configured provider."
+
+agents_dir: "./agency-stack/agency-agents-zh"
+
+llm:
+  provider: "openai"
+  model: "your-model-name"
+  max_tokens: 512
+  timeout: 300000
+  retry: 1
+
+concurrency: 1
+
+inputs:
+  - name: topic
+    description: "Topic to summarize"
+    required: true
+
+steps:
+  - id: smoke_summary
+    role: "engineering/engineering-technical-writer"
+    task: |
+      Write a concise deployment smoke-test result for this topic:
+
+      {{topic}}
+
+      Requirements:
+      - Return Markdown.
+      - Include exactly one heading.
+      - Include the phrase AO_SMOKE_OK.
+      - Keep it under 120 words.
+    output: smoke_report
+

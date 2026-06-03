@@ -1,6 +1,6 @@
 ---
 name: project-director
-description: Use when managing project work, coding, debugging, configuration, research, document creation, multi-file or multi-module changes, long-running tasks, context compaction risk, persistent requirement tracking, or when the user asks for subagents, parallel agents, 分组, 总监, 总控, project director, workers, explorers, reviewers, or agent orchestration.
+description: Use when managing project work, coding, debugging, configuration, research, document creation, multi-file or multi-module changes, long-running tasks, context compaction risk, persistent requirement tracking, or when the user asks for subagents, parallel agents, 分组, 总监, 总控, 专家系统, 专家视角, agency, project director, workers, explorers, reviewers, or agent orchestration.
 ---
 
 # Project Director 2.0
@@ -40,14 +40,15 @@ Explicit authorization to consider subagents includes `$project-director`, "suba
 Use this lightweight state model for Standard and Full Director work:
 
 ```text
-Intake -> Plan -> Dispatch -> Work -> Review -> Integrate -> Verify -> Done
-                         \-> Blocked
-                         \-> Rework
+Intake -> Expert Fit -> Plan -> Dispatch -> Work -> Review -> Integrate -> Verify -> Done
+                                      \-> Blocked
+                                      \-> Rework
 ```
 
 State gates:
 
 - Intake: capture objective, constraints, deliverable, forbidden actions, and success criteria.
+- Expert Fit: decide which specialist identities, agency roles, or expert workflows would improve the work before planning lanes.
 - Plan: classify mode, identify independent lanes, and decide what the main window must do locally.
 - Dispatch: send only bounded, non-blocking work to agents with ownership and acceptance criteria.
 - Work: continue useful local work while agents run.
@@ -60,6 +61,34 @@ State gates:
 
 Do not enter Dispatch before there are success criteria. Do not enter Done before verification evidence exists.
 
+## Expert System Bridge
+
+Use expert systems as a judgment aid for director thinking, not as a replacement for director ownership.
+
+Before planning Standard or Full Director work, and whenever the user asks for 总控、专家、智能体、分组、会诊、agent orchestration, or similar, run an Expert Fit check:
+
+- Identify the domain lenses that would improve the result: engineering, product, design, security, testing, marketing, finance, legal, operations, research, documents, data, or other relevant specialties.
+- Prefer existing roles from `agency-agents-zh` when a precise identity is useful. A common local path is `./agency-stack/agency-agents-zh`.
+- Use `agency-orchestrator` when the task benefits from multiple independent expert perspectives, a DAG workflow, or a written multi-role report. A common local workflow path is `./workflows`.
+- Keep the main window as the final owner. Expert output is evidence and perspective; the director still integrates, rejects weak findings, resolves conflicts, and verifies.
+
+Choose the lightest expert path that helps:
+
+| Path | Use when | Behavior |
+| --- | --- | --- |
+| Expert Lens | A small or tightly coupled task needs a better perspective. | Think through the task using the best-fit expert identity without spawning or running a workflow. |
+| Explicit Subagent Role | A bounded read-only, worker, or reviewer lane needs a specialist identity. | Name the specialist role in the subagent prompt, ideally using an `agency-agents-zh` role path such as `engineering/engineering-security-engineer`. |
+| Agency Workflow | A broad task needs several independent expert perspectives or a reusable workflow. | Use `agency_orchestrator` tools or `ao` CLI to list roles/workflows, compose/plan/validate, run only when provider access is available, then integrate the results. |
+
+Default agency sequence for broad tasks:
+
+1. Decide whether an existing workflow fits (`list_workflows`, then `plan_workflow`/`validate_workflow`).
+2. If no workflow fits, generate one with `compose_workflow` or manually define the expert lanes.
+3. Run the workflow only after the plan is sensible and the task has clear inputs.
+4. Treat the output as a draft expert meeting report. Cross-check important claims before acting.
+
+Do not run a large expert workflow merely because it exists. For small edits, local debugging, simple shell checks, or a single obvious implementation step, use an Expert Lens and continue locally.
+
 ## Control Surface
 
 Use a control surface whenever requirements, constraints, or work lanes are easy to lose.
@@ -71,6 +100,7 @@ For Standard work, keep it in conversation:
 ```markdown
 Mission:
 State:
+Expert Fit:
 Lanes:
 Constraints:
 Verification:
@@ -139,6 +169,16 @@ After context compaction or a long interruption, reload the control surface, ins
 
 ## Agent Roles
 
+When opening a subagent, assign the narrowest useful expert identity. Generic Explorer/Worker/Reviewer is enough for simple work; specialist identities are better when expertise changes the likely result.
+
+Examples:
+
+- Read-only codebase mapping: `engineering/engineering-codebase-onboarding-engineer` as Explorer.
+- Security review: `engineering/engineering-security-engineer` as Reviewer.
+- Performance review: `testing/testing-performance-benchmarker` as Reviewer.
+- Product requirements: `product/product-manager`, `design/design-ux-researcher`, or `engineering/engineering-software-architect`.
+- Chinese marketing/content: `marketing/marketing-xiaohongshu-operator`, `marketing/marketing-douyin-strategist`, `marketing/marketing-wechat-operator`.
+
 ### Explorer
 
 Use explorers for read-only investigation:
@@ -189,6 +229,7 @@ Before spawning an agent, decide what the main window should do locally right no
 Spawn only when all are true:
 
 - The work is concrete, bounded, and materially advances the mission.
+- The Expert Fit check indicates that a specialist identity, independent lane, or agency workflow will improve the outcome enough to justify the added process.
 - The subtask can run without blocking the main window's immediate next step.
 - The ownership boundary is clear.
 - The expected output and verification evidence are defined.
